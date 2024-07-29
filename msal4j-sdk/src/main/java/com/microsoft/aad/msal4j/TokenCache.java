@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nimbusds.jwt.JWTParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -26,6 +28,8 @@ public class TokenCache implements ITokenCache {
     protected static final int MIN_ACCESS_TOKEN_EXPIRE_IN_SEC = 5 * 60;
 
     transient private ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private static final Logger LOG = LoggerFactory.getLogger(TokenCache.class);
 
     /**
      * Constructor for token cache
@@ -174,6 +178,7 @@ public class TokenCache implements ITokenCache {
     }
 
     void saveTokens(TokenRequestExecutor tokenRequestExecutor, AuthenticationResult authenticationResult, String environment) {
+        LOG.debug("wi-check saveTokens");
         try (CacheAspect cacheAspect = new CacheAspect(
                 TokenCacheAccessContext.builder().
                         clientId(tokenRequestExecutor.getMsalRequest().application().clientId()).
@@ -181,6 +186,7 @@ public class TokenCache implements ITokenCache {
                         hasCacheChanged(true).build())) {
             try {
                 lock.writeLock().lock();
+                LOG.debug("wi-check open write lock");
 
                 if (!StringHelper.isBlank(authenticationResult.accessToken())) {
                     AccessTokenCacheEntity atEntity = createAccessTokenCacheEntity
@@ -213,6 +219,7 @@ public class TokenCache implements ITokenCache {
                     }
                 }
             } finally {
+                LOG.debug("wi-check un lock");
                 lock.writeLock().unlock();
             }
         }

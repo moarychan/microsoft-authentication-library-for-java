@@ -4,6 +4,7 @@
 package com.microsoft.aad.msal4j;
 
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -170,8 +171,13 @@ public abstract class AbstractClientApplicationBase implements IClientApplicatio
                 this,
                 context,
                 null);
-
+        log("wi-check start executeRequest");
         return executeRequest(silentRequest);
+    }
+
+    private void log(String msg) {
+        System.out.println(msg);
+        log.debug(msg);
     }
 
     @Override
@@ -231,6 +237,7 @@ public abstract class AbstractClientApplicationBase implements IClientApplicatio
         AuthenticationResultSupplier supplier = getAuthenticationResultSupplier(msalRequest);
 
         ExecutorService executorService = serviceBundle.getExecutorService();
+        log("wi-check executorService is null: " + (executorService == null));
         return executorService != null ?
                 CompletableFuture.supplyAsync(supplier, executorService) :
                 CompletableFuture.supplyAsync(supplier);
@@ -241,9 +248,14 @@ public abstract class AbstractClientApplicationBase implements IClientApplicatio
             throws Exception {
 
         HttpHeaders headers = msalRequest.headers();
-
+        log(LogHelper.createMessage(
+            String.format("Using Client Http Headers: %s", headers),
+            headers.getHeaderCorrelationIdValue()));
+        System.out.println(LogHelper.createMessage(
+            String.format("Using Client Http Headers: %s", headers),
+            headers.getHeaderCorrelationIdValue()));
         if (logPii) {
-            log.debug(LogHelper.createMessage(
+            log(LogHelper.createMessage(
                     String.format("Using Client Http Headers: %s", headers),
                     headers.getHeaderCorrelationIdValue()));
         }
@@ -252,9 +264,11 @@ public abstract class AbstractClientApplicationBase implements IClientApplicatio
                 requestAuthority,
                 msalRequest,
                 serviceBundle);
-
+        log("wi-check execute request");
+        System.out.println("wi-check execute request");
         AuthenticationResult result = requestExecutor.executeTokenRequest();
-
+        log("wi-check execute request end, start cache token. AuthorityType.AAD: " + authenticationAuthority.authorityType.equals(AuthorityType.AAD));
+        System.out.println("wi-check execute request end, start cache token. AuthorityType.AAD: " + authenticationAuthority.authorityType.equals(AuthorityType.AAD));
         if (authenticationAuthority.authorityType.equals(AuthorityType.AAD)) {
             InstanceDiscoveryMetadataEntry instanceDiscoveryMetadata =
                     AadInstanceDiscoveryProvider.getMetadataEntry(
@@ -267,7 +281,7 @@ public abstract class AbstractClientApplicationBase implements IClientApplicatio
         } else {
             tokenCache.saveTokens(requestExecutor, result, authenticationAuthority.host);
         }
-
+        log("wi-check cache token end, access token is null " + StringUtils.isBlank(result.accessToken()));
         return result;
     }
 

@@ -3,6 +3,9 @@
 
 package com.microsoft.aad.msal4j;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -11,6 +14,7 @@ import java.util.concurrent.ExecutionException;
  */
 class AcquireTokenByAppProviderSupplier extends AuthenticationResultSupplier {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AcquireTokenByAppProviderSupplier.class);
     private static final int TWO_HOURS = 2*3600;
 
     private AppTokenProviderParameters appTokenProviderParameters;
@@ -52,7 +56,7 @@ class AcquireTokenByAppProviderSupplier extends AuthenticationResultSupplier {
 
     @Override
     AuthenticationResult execute() throws Exception {
-
+        log("wi-check start AcquireTokenByAppProviderSupplier execute ");
         AuthenticationResult authenticationResult = fetchTokenUsingAppTokenProvider(appTokenProviderParameters);
 
         TokenRequestExecutor tokenRequestExecutor = new TokenRequestExecutor(
@@ -61,9 +65,16 @@ class AcquireTokenByAppProviderSupplier extends AuthenticationResultSupplier {
                 clientApplication.getServiceBundle()
         );
 
+        log("wi-check start cache token ");
         clientApplication.tokenCache.saveTokens(tokenRequestExecutor, authenticationResult, clientCredentialRequest.application().authenticationAuthority.host);
-
+        log("wi-check cache token end");
         return authenticationResult;
+    }
+
+    private void log(String msg) {
+        LOG.debug(msg);
+        System.out.println(msg);
+        clientApplication.log.debug(msg);
     }
 
     public AuthenticationResult fetchTokenUsingAppTokenProvider(AppTokenProviderParameters appTokenProviderParameters) throws ExecutionException, InterruptedException {
@@ -71,16 +82,17 @@ class AcquireTokenByAppProviderSupplier extends AuthenticationResultSupplier {
         TokenProviderResult tokenProviderResult;
 
         try{
-
+            log("wi-check start fetch app token provider");
             CompletableFuture<TokenProviderResult> completableFuture = this.clientCredentialRequest.appTokenProvider.apply(appTokenProviderParameters);
             tokenProviderResult = completableFuture.get();
+            log("wi-check fetch app token provider end");
 
         } catch (Exception ex){
             throw new MsalAzureSDKException(ex);
         }
 
         validateAndUpdateTokenProviderResult(tokenProviderResult);
-
+        log("wi-check build auth result");
         return AuthenticationResult.builder()
                 .accessToken(tokenProviderResult.getAccessToken())
                 .refreshToken(null)

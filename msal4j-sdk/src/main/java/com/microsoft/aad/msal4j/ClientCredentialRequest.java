@@ -4,11 +4,15 @@
 package com.microsoft.aad.msal4j;
 
 import com.nimbusds.oauth2.sdk.ClientCredentialsGrant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 class ClientCredentialRequest extends MsalRequest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ClientCredentialRequest.class);
 
     ClientCredentialParameters parameters;
     /** AppTokenProvider creates a Credential from a function that provides access tokens. The function
@@ -22,6 +26,7 @@ class ClientCredentialRequest extends MsalRequest {
         super(application, createMsalGrant(parameters), requestContext);
         this.parameters = parameters;
         appTokenProvider = null;
+        LOG.debug("wi-check ClientCredentialRequest init, appTokenProvider is null");
     }
 
     ClientCredentialRequest(ClientCredentialParameters parameters,
@@ -31,6 +36,7 @@ class ClientCredentialRequest extends MsalRequest {
         super(application, createMsalGrant(parameters), requestContext);
         this.parameters = parameters;
         this.appTokenProvider = appTokenProvider;
+        LOG.debug("wi-check ClientCredentialRequest, appTokenProvider inited");
     }
 
     private static OAuthAuthorizationGrant createMsalGrant(ClientCredentialParameters parameters) {

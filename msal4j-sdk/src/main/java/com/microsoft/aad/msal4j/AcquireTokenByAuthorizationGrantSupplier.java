@@ -7,6 +7,8 @@ import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
 import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
 import com.nimbusds.oauth2.sdk.SAML2BearerGrant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -14,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 class AcquireTokenByAuthorizationGrantSupplier extends AuthenticationResultSupplier {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AcquireTokenByAuthorizationGrantSupplier.class);
 
     private Authority requestAuthority;
     private MsalRequest msalRequest;
@@ -27,6 +31,8 @@ class AcquireTokenByAuthorizationGrantSupplier extends AuthenticationResultSuppl
     }
 
     AuthenticationResult execute() throws Exception {
+        LOG.debug("wi-check execute");
+        System.out.println("wi-check execute");
         AbstractMsalAuthorizationGrant authGrant = msalRequest.msalAuthorizationGrant();
 
         if (IsUiRequiredCacheSupported()) {
@@ -60,6 +66,8 @@ class AcquireTokenByAuthorizationGrantSupplier extends AuthenticationResultSuppl
         }
 
         try {
+            LOG.debug("wi-check start acquireTokenCommon");
+            System.out.println("wi-check start acquireTokenCommon");
             return clientApplication.acquireTokenCommon(msalRequest, requestAuthority);
         } catch (MsalInteractionRequiredException ex) {
             if (IsUiRequiredCacheSupported()) {

@@ -46,6 +46,7 @@ class AcquireTokenByClientCredentialSupplier extends AuthenticationResultSupplie
                 return supplier.execute();
             } catch (MsalClientException ex) {
                 LOG.debug(String.format("Cache lookup failed: %s", ex.getMessage()));
+                LOG.debug("wi-check");
                 return acquireTokenByClientCredential();
             }
         }
@@ -55,7 +56,7 @@ class AcquireTokenByClientCredentialSupplier extends AuthenticationResultSupplie
     }
 
     private AuthenticationResult acquireTokenByClientCredential() throws Exception {
-
+        LOG.debug("wi-check appTokenProvider is not null: {}", this.clientCredentialRequest.appTokenProvider != null);
         if (this.clientCredentialRequest.appTokenProvider != null) {
 
             String claims = "";
@@ -74,7 +75,7 @@ class AcquireTokenByClientCredentialSupplier extends AuthenticationResultSupplie
                     new AcquireTokenByAppProviderSupplier(this.clientApplication,
                             clientCredentialRequest,
                             appTokenProviderParameters);
-
+            LOG.debug("wi-check AcquireTokenByAppProviderSupplier execute");
             return supplier.execute();
         }
 
@@ -82,7 +83,6 @@ class AcquireTokenByClientCredentialSupplier extends AuthenticationResultSupplie
                 this.clientApplication,
                 clientCredentialRequest,
                 null);
-
         return supplier.execute();
     }
 

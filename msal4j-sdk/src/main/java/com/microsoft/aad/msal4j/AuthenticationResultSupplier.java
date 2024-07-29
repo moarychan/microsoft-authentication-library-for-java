@@ -4,6 +4,9 @@
 package com.microsoft.aad.msal4j;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,6 +22,8 @@ abstract class AuthenticationResultSupplier implements Supplier<IAuthenticationR
 
     AbstractClientApplicationBase clientApplication;
     MsalRequest msalRequest;
+
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationResultSupplier.class);
 
     AuthenticationResultSupplier(AbstractClientApplicationBase clientApplication, MsalRequest msalRequest) {
         this.clientApplication = clientApplication;
@@ -55,6 +60,7 @@ abstract class AuthenticationResultSupplier implements Supplier<IAuthenticationR
 
     @Override
     public IAuthenticationResult get() {
+        log("wi-check thread start executing");
         AuthenticationResult result;
 
         ApiEvent apiEvent = initializeApiEvent(msalRequest);
@@ -66,7 +72,9 @@ abstract class AuthenticationResultSupplier implements Supplier<IAuthenticationR
                              apiEvent,
                              true)) {
             try {
+                log("wi-check start execute: ");
                 result = execute();
+                log("wi-check execute end");
                 apiEvent.setWasSuccessful(true);
 
                 if (result != null) {
@@ -178,8 +186,14 @@ abstract class AuthenticationResultSupplier implements Supplier<IAuthenticationR
                             LogHelper.getPiiScrubbedDetails(ex),
                     msalRequest.headers().getHeaderCorrelationIdValue()));
         }
-
+        log("wi-check Event: " + apiEvent);
         return apiEvent;
+    }
+
+    private void log(String msg) {
+        LOG.debug(msg);
+        System.out.println(msg);
+        clientApplication.log.debug(msg);
     }
 
     private String computeSha256Hash(String input) {

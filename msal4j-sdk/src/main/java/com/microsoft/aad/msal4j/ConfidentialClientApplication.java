@@ -4,10 +4,15 @@
 package com.microsoft.aad.msal4j;
 
 import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.auth.*;
+import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
+import com.nimbusds.oauth2.sdk.auth.ClientAuthenticationMethod;
+import com.nimbusds.oauth2.sdk.auth.ClientSecretPost;
+import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
+import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
@@ -52,14 +57,20 @@ public class ConfidentialClientApplication extends AbstractClientApplicationBase
                 PublicApi.ACQUIRE_TOKEN_FOR_CLIENT,
                 parameters);
 
+        log("wi-check create ClientCredentialRequest, appTokenProvider is null: " + (appTokenProvider == null));
         ClientCredentialRequest clientCredentialRequest =
                 new ClientCredentialRequest(
                         parameters,
                         this,
                         context,
                         appTokenProvider);
-
+        log("wi-check this.executeRequest(clientCredentialRequest)");
         return this.executeRequest(clientCredentialRequest);
+    }
+
+    private void log(String msg) {
+        System.out.println(msg);
+        log.debug(msg);
     }
 
     @Override
@@ -166,6 +177,8 @@ public class ConfidentialClientApplication extends AbstractClientApplicationBase
 
     public static class Builder extends AbstractClientApplicationBase.Builder<Builder> {
 
+        private static final Logger LOG = LoggerFactory.getLogger(Builder.class);
+
         private IClientCredential clientCredential;
 
         private boolean sendX5c = true;
@@ -202,6 +215,8 @@ public class ConfidentialClientApplication extends AbstractClientApplicationBase
         public ConfidentialClientApplication.Builder appTokenProvider(Function<AppTokenProviderParameters, CompletableFuture<TokenProviderResult>> appTokenProvider){
             if(appTokenProvider!=null){
                 this.appTokenProvider = appTokenProvider;
+                LOG.debug("wi-check set appTokenProvider");
+                System.out.println("wi-check set appTokenProvider");
                 return self();
             }
 
@@ -210,7 +225,7 @@ public class ConfidentialClientApplication extends AbstractClientApplicationBase
 
         @Override
         public ConfidentialClientApplication build() {
-
+            LOG.debug("wi-check build ConfidentialClientApplication");
             return new ConfidentialClientApplication(this);
         }
 
